@@ -182,6 +182,12 @@ func validateAgentYaml(a *spirev1.SpireAgent, r *SpireAgentReconciler, ctx conte
 		}
 	}
 
+	if strings.Compare(a.Spec.NodeAttestor.Name, "sshpop") == 0 {
+		if len(a.Spec.HostCertPath) == 0 || len(a.Spec.HostKeyPath) == 0 {
+			return errors.New("host cert path or host key path must be configured for sshpop node attestor")
+		}
+	}
+
 	return nil
 }
 
@@ -328,6 +334,8 @@ func (r *SpireAgentReconciler) agentConfigMapDeployment(a *spirev1.SpireAgent, n
 		nodeAttestorsConfig += k8sPsatAgentNodeAttestor()
 	} else if strings.Compare(string(a.Spec.NodeAttestor.Name), "x509pop") == 0 {
 		nodeAttestorsConfig += x509popAgentNodeAttestor(a.Spec.PrivateKeyPath, a.Spec.CertificatePath)
+	} else if strings.Compare(string(a.Spec.NodeAttestor.Name), "sshpop") == 0 {
+		nodeAttestorsConfig += sshpopAgentNodeAttestor(a.Spec.HostCertPath, a.Spec.HostKeyPath)
 	}
 
 	workloadAttestorsConfig := ""
@@ -405,6 +413,16 @@ func x509popAgentNodeAttestor(privateKeyPath string, certificatePath string) str
 		plugin_data {
 			private_key_path = "` + privateKeyPath + `"
             certificate_path = "` + certificatePath + `"
+		}
+	}`
+}
+
+func sshpopAgentNodeAttestor(hostCertPath string, hostKeypath string) string {
+	return `
+	NodeAttestor "sshpop" {
+		plugin_data {
+			host_cert_path = "` + hostCertPath + `"
+            host_key_path = "` + hostKeypath + `"
 		}
 	}`
 }

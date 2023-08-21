@@ -433,7 +433,7 @@ func (r *SpireServerReconciler) spireConfigMapDeployment(s *spirev1.SpireServer,
 			nodeAttestorsConfig += k8sPsatNodeAttestor(namespace)
 		} else if strings.Compare(string(nodeAttestor.Name), "x509pop") == 0 {
 			nodeAttestorsConfig += x509popNodeAttestor(s.Spec.CABundlePath)
-		} else if strings.Compare(string(nodeAttestor.Name), "x509pop") == 0 {
+		} else if strings.Compare(string(nodeAttestor.Name), "sshpop") == 0 {
 			nodeAttestorsConfig += sshpopNodeAttestor(s.Spec.CertAuthorities, s.Spec.CertAuthoritiesPath)
 		}
 	}
